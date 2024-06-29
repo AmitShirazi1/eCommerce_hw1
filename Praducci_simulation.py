@@ -380,7 +380,24 @@ if __name__ == '__main__':
 
     # influencers = get_influencers_by_score(sorted_by_degree, costs)
     """ Current best score - influencers = [1608,3266,3260,3448]-1460 """
-    influencers = [ 2035]
+    #shuffle the nodes to make every run different  [1608,3266,3260,3448]
+   
+    influencers=[3266, 1608, 3260, 3448]
+    # Generate all permutations and store in a list
+    # all_permutations = list(itertools.permutations(nodes))
+    # random.shuffle(all_permutations)
+    
+    # Print shuffled permutations
+# for perm in all_permutations:
+#     influencers = list(perm)
+    print("Influencers: ", influencers)
+    influencers_cost = get_influencers_cost(cost_path, influencers)
+    print("Influencers cost: ", influencers_cost)
+    if influencers_cost > 1000:
+        print("*************** Influencers are too expensive! ***************")
+        exit()
+    purchased = set(influencers)    
+    get_expectation_of_final_score(NoseBook_network, purchased)
 
     '''maximization by trying the best nodes with 100 score that did not make through the intersection of each centrality'''
     nodes_cost_100_set1 = [
@@ -421,28 +438,28 @@ if __name__ == '__main__':
     exp_scores = []
 
     # Calculate expectation scores for each nod
-    for node1 in unique_nodes:
-        influencers.append(node1)
-        for node in unique_nodes:
-            influencers.append(node)
-            purchased = set(influencers)
-            print("Influencers: ", influencers)
-            influencers_cost = get_influencers_cost(cost_path, influencers)
-            print("Influencers cost: ", influencers_cost)
-            exp_score = get_expectation_of_final_score(NoseBook_network, purchased)
-            influencers.remove(node)
-            
-            # Append the score only if it is not None
-            if exp_score is not None:
-                exp_scores.append((node, exp_score))
-        influencers.remove(node1)
-        # Find the maximum expectation score and corresponding node
-        if exp_scores:
-            max_node, max_score = max(exp_scores, key=lambda x: x[1])
-            # Print the result
-            print("*************** Your final score is " + str(max_score) + ", node " + str(max_node) + " ***************")
-        else:
-            print("No valid scores calculated.")
+    # for node1 in unique_nodes:
+    #     influencers.append(node1)
+    for node in unique_nodes:
+        influencers.append(node)
+        purchased = set(influencers)
+        print("Influencers: ", influencers)
+        influencers_cost = get_influencers_cost(cost_path, influencers)
+        print("Influencers cost: ", influencers_cost)
+        exp_score = get_expectation_of_final_score(NoseBook_network, purchased)
+        influencers.remove(node)
+        
+        # Append the score only if it is not None
+        if exp_score is not None:
+            exp_scores.append((node, exp_score))
+    # influencers.remove(node1)
+    # Find the maximum expectation score and corresponding node
+    if exp_scores:
+        max_node, max_score = max(exp_scores, key=lambda x: x[1])
+        # Print the result
+        print("*************** Your final score is " + str(max_score) + ", node " + str(max_node) + " ***************")
+    else:
+        print("No valid scores calculated.")
 
 
 
