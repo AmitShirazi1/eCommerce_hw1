@@ -1,3 +1,30 @@
+# *************** Expected final score is 1368.55 ***************
+# *************** Expected final score is 1277.85 ***************
+# *************** Expected final score is 1335.15 ***************
+# *************** Expected final score is 1336.9 ***************
+# *************** Expected final score is 1399.2 ***************
+# *************** Expected final score is 1307.45 ***************
+# *************** Expected final score is 1268.0 ***************
+# *************** Expected final score is 1434.1 ***************
+# *************** Expected final score is 1419.65 ***************
+# *************** Expected final score is 1344.15 ***************
+# *************** Expected final score is 1304.1 ***************
+# *************** Expected final score is 1279.8 ***************
+# *************** Expected final score is 1366.3 ***************
+# *************** Expected final score is 1269.5 ***************
+# *************** Expected final score is 1453.7 ***************
+# *************** Expected final score is 1448.25 ***************
+# *************** Expected final score is 1325.45 ***************
+# *************** Expected final score is 1348.1 ***************
+# *************** Expected final score is 1407.15 ***************
+# *************** Expected final score is 1314.1 ***************
+# *************** Expected final score is 1273.35 ***************
+# *************** Expected final score is 1358.05 ***************
+# *************** Expected final score is 1364.4 ***************
+# *************** Expected final score is 1365.9 ***************
+# *************** Expected final score is 1344.0 ***************
+# *************** Expected final score is 1343.65 ***************
+# *************** Expected final score is 1510.05 ***************
 import numpy as np
 import networkx as nx
 import random
@@ -49,7 +76,7 @@ class Node:
         self.cost = cost
 
 
-
+###DELETE LATER
 def choose_influencers(NoseBook_network, ordered_nodes):
     """
     Choose the influencers you want to work with
@@ -171,7 +198,7 @@ def get_influencers_by_score(sorted_nodes, costs):
             break    
     return influencers
 
-import networkx as nx
+
 
 # Assuming G is your NetworkX graph, and node_a and node_b are the two nodes you're comparing
 def calculate_neighborhood_overlap(G, node_a, node_b):
@@ -193,19 +220,19 @@ def calculate_neighborhood_overlap(G, node_a, node_b):
     return overlap
 
 
-def visualize_influence_by_cost(nodes, degree_centrality, costs):
+def visualize_influence_by_cost(nodes, centrality_measure, costs):
     # Visualize influence by cost
-    degree = [degree_centrality[node] for node in nodes]
+    degree = [centrality_measure[node] for node in nodes]
     cost = [costs[node] for node in nodes]
     plt.scatter(cost, degree)
     plt.xlabel('Cost')
-    plt.ylabel('Degree')
-    plt.title('Degree by Cost')
+    plt.ylabel('score')
+    plt.title('score by Cost')
     plt.show()
 
 
 def get_expectation_of_final_score(NoseBook_network, purchased):
-    epochs = 1000
+    epochs = 20
     scores = np.zeros(epochs)
     initial_purchased = purchased
     for j in range(epochs):
@@ -226,8 +253,8 @@ def most_neighbors_per_cost(degree_centrality, costs):
         dict_of_costs[cost] = [node for node in degree_centrality.keys() if costs[node] == cost]
     # max_per_cost = max(dict_of_costs.values(), key=lambda x: degree_centrality[x])
     # print("Cost: ", cost, " Node with most neighbors: ", max_per_cost, " Degree centrality: ", degree_centrality[dict_of_costs[cost]])
-    top_5_per_cost = {cost: sorted(dict_of_costs[cost], key=lambda x: degree_centrality[x], reverse=True)[:5] for cost in costs_set}
-    top_5_per_cost[100] += [sorted(dict_of_costs[100], key=lambda x: degree_centrality[x], reverse=True)[5]]
+    top_5_per_cost = {cost: sorted(dict_of_costs[cost], key=lambda x: degree_centrality[x], reverse=True)[:10] for cost in costs_set}
+
     for cost in costs_set:
         print("Cost: ", cost, " 5 top nodes: ")
         for node in top_5_per_cost[cost]:
@@ -257,6 +284,7 @@ def scores_calculations(graph, top_5_per_cost):
 
     # Normalize and compute cost-effectiveness
     degree_scores = {node: costs[node] ** (degree_centrality[node] * 10) if node in costs and costs[node] != 0 else 0 for node in NoseBook_network.nodes}
+
     # closeness_scores = {node: betweenness_centrality[node] * 10 + 100 * costs[node]  if node in costs and costs[node] != 0 else 0 for node in NoseBook_network.nodes}
     # neighborhood_overlap_scores = {node: (sum(overlap_matrix[node_to_index[node]]) / num_nodes) * 10 + 100 * costs[node] if node in costs and costs[node] != 0 else 0 for node in NoseBook_network.nodes}
     # Sort nodes based on cost-effectiveness
@@ -265,6 +293,31 @@ def scores_calculations(graph, top_5_per_cost):
     # sorted_by_closeness = sorted(closeness_scores.keys(), key=lambda x: closeness_scores[x], reverse=True)
     # sorted_by_neighborhood_overlap = sorted(neighborhood_overlap_scores.keys(), key=lambda x: neighborhood_overlap_scores[x], reverse=False)
     return sorted_by_degree
+
+def normalize_and_combine_centrality_scores(*centrality_dicts):
+    # Extract nodes
+    nodes = list(centrality_dicts[0].keys())
+    
+    # Combine all centrality scores into a single array
+    combined_scores = np.array([
+        [centrality_dict[node] for centrality_dict in centrality_dicts]
+        for node in nodes
+    ])
+    
+    # Normalize scores manually
+    min_vals = combined_scores.min(axis=0)
+    max_vals = combined_scores.max(axis=0)
+    normalized_scores = (combined_scores - min_vals) / (max_vals - min_vals)
+    
+    # Sum normalized scores to get a single combined score for each node
+    combined_scores = normalized_scores.sum(axis=1)
+    
+    # Create a dictionary of combined scores
+    combined_centrality = dict(zip(nodes, combined_scores))
+    
+    return combined_centrality
+
+
 
 
 if __name__ == '__main__':
@@ -282,16 +335,73 @@ if __name__ == '__main__':
 
     degree_centrality = nx.degree_centrality(NoseBook_network)
     # closeness_centrality = nx.closeness_centrality(NoseBook_network)  # Runs for too long
-    # betweenness_centrality = nx.betweenness_centrality(NoseBook_network)
+   # betweenness_centrality = nx.betweenness_centrality(NoseBook_network)
+    #eigen_centrality = nx.eigenvector_centrality(NoseBook_network)
 
-    # visualize_influence_by_cost(NoseBook_network.nodes, degree_centrality, costs)
-    # top_5_per_cost = most_neighbors_per_cost(degree_centrality, costs)
-    # scores_calculations(NoseBook_network, top_5_per_cost)
+    """CURRENTLY WORKS THE BEST"""
+    #visualize_influence_by_cost(NoseBook_network.nodes, degree_centrality, costs)#-currently works the best
+    #top_5_per_cost = most_neighbors_per_cost(degree_centrality, costs) - currently works best
 
+   # combined_centrality = normalize_and_combine_centrality_scores(degree_centrality, closeness_centrality, betweenness_centrality, eigen_centrality)
+
+    
+    # comb_scores = {node: 100*degree_centrality[node]+costs[node] if node in costs and costs[node] != 0 else 0 for node in NoseBook_network.nodes}
+    # # Sort nodes by normalized degree centrality
+    # sorted_nodes = sorted(comb_scores, key=lambda x: comb_scores[x], reverse=True)
+    # print("Sorted nodes: ", sorted_nodes)
+    # #influencers= get_influencers_by_score(sorted_nodes, costs)
+    # #influencers = choose_influencers(NoseBook_network, list(sorted_nodes))
+    # influencers=[2035]
+    # print("Influencers: ", influencers)
+    # influencers_cost = get_influencers_cost(cost_path, influencers)
+    # print("Influencers cost: ", influencers_cost)
+    # if influencers_cost > 1000:
+    #     print("*************** Influencers are too expensive! ***************")
+    #     exit()
+    # purchased = set(influencers)    
+    # get_expectation_of_final_score(NoseBook_network, purchased)
+
+
+  #  print("Combined centrality: ", combined_centrality)
+
+    """trying to find the best score - each top 10 nodes per cost"""
+#    # visualize_influence_by_cost(NoseBook_network.nodes, betweenness_centrality, costs)
+#     top_5_per_cost_deg = most_neighbors_per_cost(degree_centrality, costs) 
+#     top_5_per_cost_bet = most_neighbors_per_cost(betweenness_centrality, costs) 
+#     top_5_per_cost_clos = most_neighbors_per_cost(closeness_centrality, costs)
+#     top_5_per_cost_eig = most_neighbors_per_cost(eigen_centrality, costs)
+#     #intersection of the four
+#     top_5_per_cost = {cost: list(set(top_5_per_cost_deg[cost]) & set(top_5_per_cost_bet[cost]) & set(top_5_per_cost_clos[cost]) & set(top_5_per_cost_eig[cost])) for cost in costs.values()}
+#     print("Top 5 per cost: ", top_5_per_cost)
+#     scores_calculations(NoseBook_network, top_5_per_cost)
+
+    # top_5_per_cost_combined = most_neighbors_per_cost(combined_centrality, costs)
+    # print("Top 5 per cost combined: ", top_5_per_cost_combined)
 
     # influencers = get_influencers_by_score(sorted_by_degree, costs)
-    """ Current best score - influencers = [1608,3266,3260,3448]-1430,1417 """
-    influencers = [1608,3266,3260,3448]
+    """ Current best score - influencers = [1608,3266,3260,3448]-1460 """
+    influencers = [ 2035]
+
+    '''maximization by trying the best nodes with 100 score that did not make through the intersection of each centrality'''
+    nodes_cost_100_set1 = [
+        318, 2295, 617, 3002, 1455, 3448, 1453, 814, 2480, 3391
+    ]
+    nodes_cost_100_set2 = [
+        3892, 2516, 3798, 3654, 200, 3448, 2191, 3293, 1897, 1887
+    ]
+    nodes_cost_100_set3 = [
+        3798, 3654, 1897, 2771, 3659, 1719, 2282, 3047, 1110
+    ]
+    nodes_cost_100_set4 = [
+        318, 617, 2295, 3002, 2480, 814, 1453, 259, 3391, 525
+    ]
+    node_cost_100_set_5 =[318,2295, 617, 3002,1455,3448,1453,814, 2480,3391 ]
+
+    # Combine all sets into a single list
+    all_nodes = (
+        nodes_cost_100_set1 + nodes_cost_100_set2 +
+        nodes_cost_100_set3 + nodes_cost_100_set4)
+    
     #influencers = choose_influencers(NoseBook_network, list(sorted_nodes))
     print("Influencers: ", influencers)
     influencers_cost = get_influencers_cost(cost_path, influencers)
@@ -299,10 +409,44 @@ if __name__ == '__main__':
     if influencers_cost > 1000:
         print("*************** Influencers are too expensive! ***************")
         exit()
-
-    purchased = set(influencers)
-
+    purchased = set(influencers)    
     get_expectation_of_final_score(NoseBook_network, purchased)
+
+    # Remove duplicates by converting the list to a set and back to a list
+    unique_nodes = list(set(all_nodes))
+    print("Unique nodes: ", unique_nodes)
+
+  
+   
+    exp_scores = []
+
+    # Calculate expectation scores for each nod
+    for node1 in unique_nodes:
+        influencers.append(node1)
+        for node in unique_nodes:
+            influencers.append(node)
+            purchased = set(influencers)
+            print("Influencers: ", influencers)
+            influencers_cost = get_influencers_cost(cost_path, influencers)
+            print("Influencers cost: ", influencers_cost)
+            exp_score = get_expectation_of_final_score(NoseBook_network, purchased)
+            influencers.remove(node)
+            
+            # Append the score only if it is not None
+            if exp_score is not None:
+                exp_scores.append((node, exp_score))
+        influencers.remove(node1)
+        # Find the maximum expectation score and corresponding node
+        if exp_scores:
+            max_node, max_score = max(exp_scores, key=lambda x: x[1])
+            # Print the result
+            print("*************** Your final score is " + str(max_score) + ", node " + str(max_node) + " ***************")
+        else:
+            print("No valid scores calculated.")
+
+
+
+'''the original main'''
 
     # for i in range(6):
     #     purchased = buy_products(NoseBook_network, purchased)
@@ -311,3 +455,6 @@ if __name__ == '__main__':
     # score = product_exposure_score(NoseBook_network, purchased)
 
     # print("*************** Your final score is " + str(score) + " ***************")
+
+   
+
