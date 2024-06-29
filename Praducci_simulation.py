@@ -1,30 +1,3 @@
-# *************** Expected final score is 1368.55 ***************
-# *************** Expected final score is 1277.85 ***************
-# *************** Expected final score is 1335.15 ***************
-# *************** Expected final score is 1336.9 ***************
-# *************** Expected final score is 1399.2 ***************
-# *************** Expected final score is 1307.45 ***************
-# *************** Expected final score is 1268.0 ***************
-# *************** Expected final score is 1434.1 ***************
-# *************** Expected final score is 1419.65 ***************
-# *************** Expected final score is 1344.15 ***************
-# *************** Expected final score is 1304.1 ***************
-# *************** Expected final score is 1279.8 ***************
-# *************** Expected final score is 1366.3 ***************
-# *************** Expected final score is 1269.5 ***************
-# *************** Expected final score is 1453.7 ***************
-# *************** Expected final score is 1448.25 ***************
-# *************** Expected final score is 1325.45 ***************
-# *************** Expected final score is 1348.1 ***************
-# *************** Expected final score is 1407.15 ***************
-# *************** Expected final score is 1314.1 ***************
-# *************** Expected final score is 1273.35 ***************
-# *************** Expected final score is 1358.05 ***************
-# *************** Expected final score is 1364.4 ***************
-# *************** Expected final score is 1365.9 ***************
-# *************** Expected final score is 1344.0 ***************
-# *************** Expected final score is 1343.65 ***************
-# *************** Expected final score is 1510.05 ***************
 import numpy as np
 import networkx as nx
 import random
@@ -35,7 +8,6 @@ import itertools
 
 
 ID1, ID2 = 319044434, 314779166
-# influencers = [555]
 
 NoseBook_path = 'NoseBook_friendships.csv'
 cost_path = 'costs.csv'
@@ -57,79 +29,6 @@ def create_graph(edges_path: str) -> nx.Graph:
     net = nx.Graph()
     net.add_edges_from(edges)
     return net
-
-
-class Node:
-    def __init__(self, id, num_neighbors, expected_num_bought_neighbors=[0]*6):
-        self.id = id
-        self.cost = None
-        self.num_neighbors = num_neighbors
-        self.expected_num_bought_neighbors = expected_num_bought_neighbors
-    
-    def get_buying_prob(self, t):
-        return self.expected_num_bought_neighbors[t] / self.num_neighbors
-    
-    def add_neighbor_to_buyers(self, t):
-        self.expected_num_bought_neighbors[t] += 1
-
-    def set_cost(self, cost):
-        self.cost = cost
-
-
-###DELETE LATER
-def choose_influencers(NoseBook_network, ordered_nodes):
-    """
-    Choose the influencers you want to work with
-    :param NoseBook_network: The NoseBook social network
-    :return: A list of the influencers you chose
-    """
-    # the total cost of the influencers should not exceed 1000
-    money_left = 1000
-    influencers = []
-    neigh_to_remove = set()
-    i = 0
-    while money_left > 0 and i < len(ordered_nodes):
-        influencer = ordered_nodes[i]
-        i += 1
-        # while influencer in influencers:
-        #     influencer = random.choice(list(NoseBook_network.nodes))
-        while get_influencers_cost(cost_path, influencers + [influencer]) > 1000:
-            influencer = ordered_nodes[i]
-            i += 1
-            print("Expensive influencer: ", influencer)
-        influencers.append(influencer)
-
-        curr_neighbors = {influencer}
-        nodes_created = dict()
-        # Simulating 6 rounds of buying
-        for t in range(6):
-            neighbors = set()
-            curr_neighbors = curr_neighbors.difference(neigh_to_remove)  # Remove the neighbors that were already bought
-            neigh_to_remove = neigh_to_remove.union(curr_neighbors)  # Add the neighbors that were already bought
-
-            # Update the neighbors of the current neighbors
-            for neigh in curr_neighbors:
-                curr_node_neighs = set(NoseBook_network.neighbors(neigh))
-                neighbors = neighbors.union(curr_node_neighs)  # Add the neighbors of the current neighbors
-                # Create a node for each neighbor
-                if neigh not in nodes_created.keys():
-                    node = Node(neigh, len(curr_node_neighs))
-                    nodes_created[neigh] = node
-                else:
-                    node = nodes_created[neigh]
-                    node.add_neighbor_to_buyers(t)
-
-                
-            print("Updated neighbors: ", neighbors)
-            curr_neighbors = neighbors  # Add bernoulli according to the probability of buying
-            # Also, think about maybe we want duplicates.
-
-
-        ordered_nodes = [node for node in ordered_nodes if node not in neigh_to_remove]
-        money_left -= get_influencers_cost(cost_path, influencers)
-        print("Money left: ", money_left)
-
-    return influencers
 
 
 def buy_products(net: nx.Graph, purchased: set) -> set:
@@ -183,45 +82,110 @@ def get_influencers_cost(cost_path: str, influencers: list) -> int:
     return sum([costs[costs['user'] == influencer]['cost'].item() if influencer in list(costs['user']) else 0 for influencer in influencers])
 
 
+""" ~ Our functions ~ """
+
+class Node:
+    def __init__(self, id, num_neighbors, expected_num_bought_neighbors=[0]*6):
+        self.id = id
+        self.cost = None
+        self.num_neighbors = num_neighbors
+        self.expected_num_bought_neighbors = expected_num_bought_neighbors
+    
+    def get_buying_prob(self, t):
+        """ Returns the probability of buying at round t """
+        return self.expected_num_bought_neighbors[t] / self.num_neighbors
+    
+    def add_neighbor_to_buyers(self, t):
+        """ Adds a neighbor to the set of neighbors that bought at round t """
+        self.expected_num_bought_neighbors[t] += 1
+
+    def set_cost(self, cost):
+        self.cost = cost
+
+
+def choose_influencers(NoseBook_network, ordered_nodes):
+    """
+    Choose the influencers we want to start with
+    :param NoseBook_network: The NoseBook social network
+    :param ordered_nodes: A list of the nodes ordered by a centrality measure of some sort
+    :return: A list of the influencers we chose
+    """
+    # the total cost of the influencers should not exceed 1000
+    money_left = 1000
+    influencers = []
+    neigh_to_remove = set()
+    i = 0
+    while money_left > 0 and i < len(ordered_nodes):
+        influencer = ordered_nodes[i]
+        i += 1
+        # If the influencer is too expensive, skip to the next one
+        while get_influencers_cost(cost_path, influencers + [influencer]) > 1000:
+            influencer = ordered_nodes[i]
+            i += 1
+        influencers.append(influencer)
+
+        curr_neighbors = {influencer}
+        nodes_created = dict()
+        # Simulating 6 rounds of buying
+        for t in range(6):
+            neighbors = set()
+            curr_neighbors = curr_neighbors.difference(neigh_to_remove)  # Remove the neighbors that already bought in a previous round from the neighbors of the current round
+            neigh_to_remove = neigh_to_remove.union(curr_neighbors)  # Add the neighbors that already bought in a previous round to the set of neighbors to remove
+
+            # Update the neighbors of the current neighbors
+            for neigh in curr_neighbors:
+                curr_node_neighs = set(NoseBook_network.neighbors(neigh))
+                neighbors = neighbors.union(curr_node_neighs)  # Add the neighbors of the current neighbors
+                # Create a node for each neighbor
+                if neigh not in nodes_created.keys():
+                    node = Node(neigh, len(curr_node_neighs))
+                    nodes_created[neigh] = node
+                else:
+                    node = nodes_created[neigh]
+                    node.add_neighbor_to_buyers(t)
+
+            curr_neighbors = neighbors  # Add bernoulli according to the probability of buying
+                                        # Also, cancel duplicate detection and refer to probabilities
+
+
+        ordered_nodes = [node for node in ordered_nodes if node not in neigh_to_remove]
+        money_left -= get_influencers_cost(cost_path, influencers)  # Update the money left after the addition of the influencer
+    return influencers
 
 
 def get_influencers_by_score(sorted_nodes, costs):
-    # Select influencers within budget
+    """ Get the influencers based on the score and the cost.
+        This function is instead of the choose_influencers function. """
     budget = 1000
     influencers = []
     current_budget = budget
     for node in sorted_nodes:
-        if costs[node] <= current_budget:
+        if costs[node] <= current_budget:  # If the cost of the influencer is less than the budget, add them
             influencers.append(node)
-            current_budget -= costs[node]
+            current_budget -= costs[node]  # Update the budget
         if current_budget <= 0:
             break    
     return influencers
 
 
-
-# Assuming G is your NetworkX graph, and node_a and node_b are the two nodes you're comparing
-def calculate_neighborhood_overlap(G, node_a, node_b):
-    neighbors_a = set(G.neighbors(node_a))
-    neighbors_b = set(G.neighbors(node_b))
+def calculate_neighborhood_overlap(graph, node_a, node_b):
+    """ Calculate the neighborhood overlap between two nodes """
+    neighbors_a = set(graph.neighbors(node_a))
+    neighbors_b = set(graph.neighbors(node_b))
     
-    # Intersection of neighbors
-    common_neighbors = neighbors_a.intersection(neighbors_b)
+    common_neighbors = neighbors_a.intersection(neighbors_b)  # Intersection of neighbors
+    all_neighbors = neighbors_a.union(neighbors_b)  # Union of neighbors
     
-    # Union of neighbors
-    all_neighbors = neighbors_a.union(neighbors_b)
-    
-    # Avoid division by zero
-    if len(all_neighbors) == 0:
+    if len(all_neighbors) == 0:  # Avoiding division by zero
         return 0
     
-    # Neighborhood overlap
+    # Neighborhood overlap calculation
     overlap = len(common_neighbors) / len(all_neighbors)
     return overlap
 
 
 def visualize_influence_by_cost(nodes, centrality_measure, costs):
-    # Visualize influence by cost
+    """ Visualize the influence of the nodes by their cost """
     degree = [centrality_measure[node] for node in nodes]
     cost = [costs[node] for node in nodes]
     plt.scatter(cost, degree)
@@ -232,38 +196,44 @@ def visualize_influence_by_cost(nodes, centrality_measure, costs):
 
 
 def get_expectation_of_final_score(NoseBook_network, purchased):
-    epochs = 20
+    """ Get the expectation of the final score """
+    epochs = 20  # Number of epochs to run, change this value
     scores = np.zeros(epochs)
-    initial_purchased = purchased
+    initial_purchased = purchased  # Save the initial purchased set
     for j in range(epochs):
+        # Run the simulation for 6 rounds
         for i in range(6):
-            purchased = buy_products(NoseBook_network, purchased)
+            purchased = buy_products(NoseBook_network, purchased)  # Find the new nodes that bought the product
 
-        score = product_exposure_score(NoseBook_network, purchased)
+        score = product_exposure_score(NoseBook_network, purchased)  # Calculate the score
         purchased = initial_purchased
         scores[j] = score
-    print("*************** Expected final score is " + str(np.mean(scores)) + " ***************")
+    print("*************** Expected final score is " + str(np.mean(scores)) + " ***************")  # Print the approximation to the expectation of the final score
 
 
-def most_neighbors_per_cost(degree_centrality, costs):
+def most_neighbors_per_cost(centrality_measure, costs):
+    """ Get the 5 nodes with the best value w.r.t a centrality measure per cost """
+    k = 10 # Number of nodes to choose, change this value
     costs_set = set(costs.values())
-    # making list on nodes with the same cost
+    # A dictionary that will contain all nodes with the same cost
     dict_of_costs = {cost: [] for cost in costs_set}
     for cost in costs_set:
-        dict_of_costs[cost] = [node for node in degree_centrality.keys() if costs[node] == cost]
-    # max_per_cost = max(dict_of_costs.values(), key=lambda x: degree_centrality[x])
-    # print("Cost: ", cost, " Node with most neighbors: ", max_per_cost, " Degree centrality: ", degree_centrality[dict_of_costs[cost]])
-    top_5_per_cost = {cost: sorted(dict_of_costs[cost], key=lambda x: degree_centrality[x], reverse=True)[:10] for cost in costs_set}
+        # Making lists of nodes with the same cost
+        dict_of_costs[cost] = [node for node in centrality_measure.keys() if costs[node] == cost]
+    # The 5 nodes with the best value w.r.t a centrality measure per cost
+    top_k_per_cost = {cost: sorted(dict_of_costs[cost], key=lambda x: centrality_measure[x], reverse=True)[:k] for cost in costs_set}
 
+    # Print the chosen k nodes for each cost
     for cost in costs_set:
-        print("Cost: ", cost, " 5 top nodes: ")
-        for node in top_5_per_cost[cost]:
-            print(node, " Degree centrality: ", degree_centrality[node])
-    return top_5_per_cost
+        print("Cost: ", cost, str(k)+"  top nodes: ")
+        for node in top_k_per_cost[cost]:
+            print(node, " Centrality measure: ", centrality_measure[node])
+    return top_k_per_cost
 
 
-def scores_calculations(graph, top_5_per_cost):
-    top_nodes = [node for nodes in top_5_per_cost.values() for node in nodes]
+def build_neighborhood_overlap_matrix(graph, top_k_per_cost):
+    """ Build the neighborhood overlap matrix, only for the top k nodes (per cost). """
+    top_nodes = [node for nodes in top_k_per_cost.values() for node in nodes]
 
     # Create a mapping of nodes to indices
     node_to_index = {node: i for i, node in enumerate(top_nodes)}
@@ -281,7 +251,11 @@ def scores_calculations(graph, top_5_per_cost):
             overlap_matrix[index_b][index_a] = overlap
             print("Overlap between nodes", node_a, "and", node_b, "is", overlap)
     # overlap_matrix now contains the neighborhood overlap values for all node pairs
+    return overlap_matrix, node_to_index
 
+
+def scores_calculations(NoseBook_network, top_k_per_cost):
+    """ Calculate the scores for the top k nodes per cost """
     # Normalize and compute cost-effectiveness
     degree_scores = {node: costs[node] ** (degree_centrality[node] * 10) if node in costs and costs[node] != 0 else 0 for node in NoseBook_network.nodes}
 
@@ -293,6 +267,7 @@ def scores_calculations(graph, top_5_per_cost):
     # sorted_by_closeness = sorted(closeness_scores.keys(), key=lambda x: closeness_scores[x], reverse=True)
     # sorted_by_neighborhood_overlap = sorted(neighborhood_overlap_scores.keys(), key=lambda x: neighborhood_overlap_scores[x], reverse=False)
     return sorted_by_degree
+
 
 def normalize_and_combine_centrality_scores(*centrality_dicts):
     # Extract nodes
