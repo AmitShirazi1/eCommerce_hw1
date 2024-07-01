@@ -184,20 +184,20 @@ def calculate_neighborhood_overlap(graph, node_a, node_b):
     return overlap
 
 
-def visualize_influence_by_cost(nodes, centrality_measure, costs):
+def visualize_influence_by_cost(nodes, centrality_measure, costs, title):
     """ Visualize the influence of the nodes by their cost """
     degree = [centrality_measure[node] for node in nodes]
     cost = [costs[node] for node in nodes]
     plt.scatter(cost, degree)
     plt.xlabel('Cost')
-    plt.ylabel('score')
+    plt.ylabel(title)
     plt.title('score by Cost')
     plt.show()
 
 
 def get_expectation_of_final_score(NoseBook_network, purchased):
     """ Get the expectation of the final score """
-    epochs = 20  # Number of epochs to run, change this value
+    epochs = 1000  # Number of epochs to run, change this value
     scores = np.zeros(epochs)
     initial_purchased = purchased  # Save the initial purchased set
     for j in range(epochs):
@@ -213,7 +213,7 @@ def get_expectation_of_final_score(NoseBook_network, purchased):
 
 def most_neighbors_per_cost(centrality_measure, costs):
     """ Get the 5 nodes with the best value w.r.t a centrality measure per cost """
-    k = 10 # Number of nodes to choose, change this value
+    k = 30 # Number of nodes to choose, change this value
     costs_set = set(costs.values())
     # A dictionary that will contain all nodes with the same cost
     dict_of_costs = {cost: [] for cost in costs_set}
@@ -308,14 +308,18 @@ if __name__ == '__main__':
     costs = pd.read_csv(cost_path)
     costs = dict(zip(costs['user'], costs['cost']))
 
-    degree_centrality = nx.degree_centrality(NoseBook_network)
+    # degree_centrality = nx.degree_centrality(NoseBook_network)
     # closeness_centrality = nx.closeness_centrality(NoseBook_network)  # Runs for too long
-   # betweenness_centrality = nx.betweenness_centrality(NoseBook_network)
-    #eigen_centrality = nx.eigenvector_centrality(NoseBook_network)
+    # betweenness_centrality = nx.betweenness_centrality(NoseBook_network)
+    # eigen_centrality = nx.eigenvector_centrality(NoseBook_network)
+    #page_rank = nx.pagerank(NoseBook_network)
+
 
     """CURRENTLY WORKS THE BEST"""
-    #visualize_influence_by_cost(NoseBook_network.nodes, degree_centrality, costs)#-currently works the best
-    #top_5_per_cost = most_neighbors_per_cost(degree_centrality, costs) - currently works best
+    # visualize_influence_by_cost(NoseBook_network.nodes, degree_centrality, costs," degree_rank")#-currently works the best
+    # visualize_influence_by_cost(degree_centrality,closeness_centrality, costs, "clossness_rank")
+    # visualize_influence_by_cost(degree_centrality, eigen_centrality, costs,'eigen_rank')
+    # #top_5_per_cost = most_neighbors_per_cost(degree_centrality, costs) - currently works best
 
    # combined_centrality = normalize_and_combine_centrality_scores(degree_centrality, closeness_centrality, betweenness_centrality, eigen_centrality)
 
@@ -341,23 +345,24 @@ if __name__ == '__main__':
 
     """trying to find the best score - each top 10 nodes per cost"""
 #    # visualize_influence_by_cost(NoseBook_network.nodes, betweenness_centrality, costs)
-#     top_5_per_cost_deg = most_neighbors_per_cost(degree_centrality, costs) 
-#     top_5_per_cost_bet = most_neighbors_per_cost(betweenness_centrality, costs) 
-#     top_5_per_cost_clos = most_neighbors_per_cost(closeness_centrality, costs)
-#     top_5_per_cost_eig = most_neighbors_per_cost(eigen_centrality, costs)
-#     #intersection of the four
-#     top_5_per_cost = {cost: list(set(top_5_per_cost_deg[cost]) & set(top_5_per_cost_bet[cost]) & set(top_5_per_cost_clos[cost]) & set(top_5_per_cost_eig[cost])) for cost in costs.values()}
-#     print("Top 5 per cost: ", top_5_per_cost)
-#     scores_calculations(NoseBook_network, top_5_per_cost)
+    # top_5_per_cost_deg = most_neighbors_per_cost(degree_centrality, costs) 
+    # top_5_per_cost_bet = most_neighbors_per_cost(betweenness_centrality, costs) 
+    # top_5_per_cost_clos = most_neighbors_per_cost(closeness_centrality, costs)
+    # top_5_per_cost_eig = most_neighbors_per_cost(eigen_centrality, costs)
+    # #intersection of the four
+    # top_5_per_cost = {cost: list(set(top_5_per_cost_deg[cost]) & set(top_5_per_cost_bet[cost]) & set(top_5_per_cost_clos[cost]) & set(top_5_per_cost_eig[cost])) for cost in costs.values()}
+    # print("Top 5 per cost: ", top_5_per_cost)
+    # scores_calculations(NoseBook_network, top_5_per_cost)
 
     # top_5_per_cost_combined = most_neighbors_per_cost(combined_centrality, costs)
     # print("Top 5 per cost combined: ", top_5_per_cost_combined)
 
     # influencers = get_influencers_by_score(sorted_by_degree, costs)
-    """ Current best score - influencers = [1608,3266,3260,3448]-1460 """
+    """ previous best score - influencers = [1608,3266,3260,3448]-1460 """
+    """ current best score - influencers = [3448, 2516, 2771, 3293, 259, 3461, 3851, 24, 600]- 1745.084"""
     #shuffle the nodes to make every run different  [1608,3266,3260,3448]
    
-    influencers=[3266, 1608, 3260, 3448]
+    influencers=  [3448, 2516, 3659, 2771, 259, 3461, 3851, 24, 600]
     # Generate all permutations and store in a list
     # all_permutations = list(itertools.permutations(nodes))
     # random.shuffle(all_permutations)
@@ -373,40 +378,44 @@ if __name__ == '__main__':
         exit()
     purchased = set(influencers)    
     get_expectation_of_final_score(NoseBook_network, purchased)
+#     list_500= [3299, 1478, 1608, 2255, 2389]   
+#     list_400 = [1090, 1091, 3588, 2341, 1769, 975, 3024, 3439, 2647, 3961, 506, 796, 3454]
 
-    '''maximization by trying the best nodes with 100 score that did not make through the intersection of each centrality'''
-    nodes_cost_100_set1 = [
-        318, 2295, 617, 3002, 1455, 3448, 1453, 814, 2480, 3391
-    ]
-    nodes_cost_100_set2 = [
-        3892, 2516, 3798, 3654, 200, 3448, 2191, 3293, 1897, 1887
-    ]
-    nodes_cost_100_set3 = [
-        3798, 3654, 1897, 2771, 3659, 1719, 2282, 3047, 1110
-    ]
-    nodes_cost_100_set4 = [
-        318, 617, 2295, 3002, 2480, 814, 1453, 259, 3391, 525
-    ]
-    node_cost_100_set_5 =[318,2295, 617, 3002,1455,3448,1453,814, 2480,3391 ]
+#     '''maximization by trying the best nodes with 100 score that did not make through the intersection of each centrality'''
+#     nodes_cost_100_set1 = [
+#         318, 2295, 617, 3002, 1455, 3448, 1453, 814, 2480, 3391
+#     ]
+#     nodes_cost_100_set2 = [
+#         3892, 2516, 3798, 3654, 200, 3448, 2191, 3293, 1897, 1887
+#     ]
+#     nodes_cost_100_set3 = [
+#         3798, 3654, 1897, 2771, 3659, 1719, 2282, 3047, 1110
+#     ]
+#     nodes_cost_100_set4 = [
+#         318, 617, 2295, 3002, 2480, 814, 1453, 259, 3391, 525
+#     ]
+#     node_cost_100_set5 =[318,2295, 617, 3002,1455,3448,1453,814, 2480,3391 ]
 
-    # Combine all sets into a single list
-    all_nodes = (
-        nodes_cost_100_set1 + nodes_cost_100_set2 +
-        nodes_cost_100_set3 + nodes_cost_100_set4)
+#     # Combine all sets into a single list
+#     all_nodes = (
+#         nodes_cost_100_set1 + nodes_cost_100_set2 +
+#         nodes_cost_100_set3 + nodes_cost_100_set4 + node_cost_100_set5)
     
-    #influencers = choose_influencers(NoseBook_network, list(sorted_nodes))
-    print("Influencers: ", influencers)
-    influencers_cost = get_influencers_cost(cost_path, influencers)
-    print("Influencers cost: ", influencers_cost)
-    if influencers_cost > 1000:
-        print("*************** Influencers are too expensive! ***************")
-        exit()
-    purchased = set(influencers)    
-    get_expectation_of_final_score(NoseBook_network, purchased)
+#     #influencers = choose_influencers(NoseBook_network, list(sorted_nodes))
+    
+#     print("Influencers: ", influencers)
+#     influencers_cost = get_influencers_cost(cost_path, influencers)
+#     print("Influencers cost: ", influencers_cost)
+#     if influencers_cost > 1000:
+#         print("*************** Influencers are too expensive! ***************")
+#         exit()
+#     purchased = set(influencers)    
+#     get_expectation_of_final_score(NoseBook_network, purchased)
 
-    # Remove duplicates by converting the list to a set and back to a list
-    unique_nodes = list(set(all_nodes))
-    print("Unique nodes: ", unique_nodes)
+#     # Remove duplicates by converting the list to a set and back to a list
+#    # all_nodes= [1090, 1091, 3588, 2341, 1769, 975, 3024, 3439, 2647, 3961, 506, 796, 3454]
+#     unique_nodes = list(set(all_nodes))
+#     print("Unique nodes: ", unique_nodes)
 
   
    
@@ -415,26 +424,34 @@ if __name__ == '__main__':
     # Calculate expectation scores for each nod
     # for node1 in unique_nodes:
     #     influencers.append(node1)
-    for node in unique_nodes:
-        influencers.append(node)
-        purchased = set(influencers)
-        print("Influencers: ", influencers)
-        influencers_cost = get_influencers_cost(cost_path, influencers)
-        print("Influencers cost: ", influencers_cost)
-        exp_score = get_expectation_of_final_score(NoseBook_network, purchased)
-        influencers.remove(node)
-        
-        # Append the score only if it is not None
-        if exp_score is not None:
-            exp_scores.append((node, exp_score))
-    # influencers.remove(node1)
-    # Find the maximum expectation score and corresponding node
-    if exp_scores:
-        max_node, max_score = max(exp_scores, key=lambda x: x[1])
-        # Print the result
-        print("*************** Your final score is " + str(max_score) + ", node " + str(max_node) + " ***************")
-    else:
-        print("No valid scores calculated.")
+    # influencers=[]
+    # for node_500 in list_500:
+    #     influencers.append(node_500)
+    #     for node_400 in list_400:
+    #         influencers.append(node_400)
+    #         for node in unique_nodes:
+    #             influencers.append(node)
+    #             purchased = set(influencers)
+    #             print("Influencers: ", influencers)
+    #             influencers_cost = get_influencers_cost(cost_path, influencers)
+    #             print("Influencers cost: ", influencers_cost)
+    #             exp_score = get_expectation_of_final_score(NoseBook_network, purchased)
+               
+                
+    #             # Append the score only if it is not None
+    #             if exp_score is not None:
+    #                 exp_scores.append((node, exp_score))
+    #             influencers.remove(node)    
+    #         # influencers.remove(node1)
+    #         # Find the maximum expectation score and corresponding node
+    #         influencers.remove(node_400)
+    #     influencers.remove(node_500)    
+    # if exp_scores:
+    #     max_node, max_score = max(exp_scores, key=lambda x: x[1])
+    #     # Print the result
+    #     print("*************** Your final score is " + str(max_score) + ", node " + str(max_node) + " ***************")
+    # else:
+    #     print("No valid scores calculated.")
 
 
 
@@ -448,5 +465,9 @@ if __name__ == '__main__':
 
     # print("*************** Your final score is " + str(score) + " ***************")
 
-   
+# iterate over these lists with permutations
+list_500= [3299, 1478, 1608, 2255, 2389]   
+list_400 = [1090, 1091, 3588, 2341, 1769, 975, 3024, 3439, 2647, 3961, 506, 796, 3454]
+
+
 
