@@ -359,7 +359,7 @@ if __name__ == '__main__':
 
     # influencers = get_influencers_by_score(sorted_by_degree, costs)
     """ previous best score - influencers = [1608,3266,3260,3448]-1460 """
-    """ current best score - influencers = [3448, 2516, 2771, 3293, 259, 3461, 3851, 24, 600]- 1745.084"""
+    """ current best score - influencers = [3448, 2516, 2771, 3293, 259, 3461, 3851, 24, 600]- 1757"""
     #shuffle the nodes to make every run different  [1608,3266,3260,3448]
    
     influencers=  [3448, 2516, 3659, 2771, 259, 3461, 3851, 24, 600]
