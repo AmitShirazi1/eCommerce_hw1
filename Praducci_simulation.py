@@ -358,11 +358,15 @@ if __name__ == '__main__':
     # print("Top 5 per cost combined: ", top_5_per_cost_combined)
 
     # influencers = get_influencers_by_score(sorted_by_degree, costs)
-    """ previous best score - influencers = [1608,3266,3260,3448]-1460 """
-    """ current best score - influencers = [3448, 2516, 2771, 3293, 259, 3461, 3851, 24, 600]- 1757"""
+    """  LAST best score - influencers = [3448, 3659, 318, 3851, 3370, 24, 777, 3654, 449]-1885.646 """
+    """the last one i added is 449"""
+    """ CUURENT best score - influencers = [3448, 318, 3851, 3370, 24, 777, 3654, 449, 2771]-1905 last one added 2771"""
+    """the last one i added is 777"""
+    """"ifluencers:  [3448, 2516, 3659, 318, 3851, 3370, 24, 777, 3654]-1867.832
+    LAST WHEN ADDED IS 3654"""
     #shuffle the nodes to make every run different  [1608,3266,3260,3448]
-   
-    influencers=  [3448, 2516, 3659, 2771, 259, 3461, 3851, 24, 600]
+    "substracting: reduce 3448-200, reduce 318-200 ,reduce-3851-200, reduce 3370-300, reduce-24-150,reduce 777-200,3654-200,449-110 "
+    influencers =    [3448, 318, 3851, 3370, 24, 777, 3654, 449, 2771]
     # Generate all permutations and store in a list
     # all_permutations = list(itertools.permutations(nodes))
     # random.shuffle(all_permutations)
@@ -457,17 +461,17 @@ if __name__ == '__main__':
 
 '''the original main'''
 
-    # for i in range(6):
-    #     purchased = buy_products(NoseBook_network, purchased)
-    #     print("finished round", i + 1)
+for i in range(6):
+    purchased = buy_products(NoseBook_network, purchased)
+    print("finished round", i + 1)
 
-    # score = product_exposure_score(NoseBook_network, purchased)
+score = product_exposure_score(NoseBook_network, purchased)
 
-    # print("*************** Your final score is " + str(score) + " ***************")
+print("*************** Your final score is " + str(score) + " ***************")
 
-# iterate over these lists with permutations
-list_500= [3299, 1478, 1608, 2255, 2389]   
-list_400 = [1090, 1091, 3588, 2341, 1769, 975, 3024, 3439, 2647, 3961, 506, 796, 3454]
+# # iterate over these lists with permutations
+# list_500= [3299, 1478, 1608, 2255, 2389]   
+# list_400 = [1090, 1091, 3588, 2341, 1769, 975, 3024, 3439, 2647, 3961, 506, 796, 3454]
 
 
 
