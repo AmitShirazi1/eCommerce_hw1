@@ -4,7 +4,6 @@ import random
 import pandas as pd
 import csv
 import matplotlib.pyplot as plt
-import itertools
 
 
 ID1, ID2 = 319044434, 314779166
@@ -208,8 +207,14 @@ def get_expectation_of_final_score(NoseBook_network, purchased):
         score = product_exposure_score(NoseBook_network, purchased)  # Calculate the score
         purchased = initial_purchased
         scores[j] = score
-    print("*************** Expected final score is " + str(np.mean(scores)) + " ***************")  # Print the approximation to the expectation of the final score
-
+    print("*************** Expected final score is " + str(np.mean(scores)) + " ***************")
+    print("minimum " + str(np.min(scores))+"maximum"+ str(max(scores)) )  # Print the approximation to the expectation of the final score
+    #calculate the standard deviation
+    avg_score=np.mean(scores)
+    std_influencer=np.std(scores)
+    #confidence interval
+    confidence_interval = [avg_score-1.96 * std_influencer / np.sqrt(epochs), avg_score+1.96 * std_influencer / np.sqrt(epochs)]
+    print("confidence interval: ", confidence_interval)
 
 def most_neighbors_per_cost(centrality_measure, costs):
     """ Get the 5 nodes with the best value w.r.t a centrality measure per cost """
@@ -360,13 +365,15 @@ if __name__ == '__main__':
     # influencers = get_influencers_by_score(sorted_by_degree, costs)
     """  LAST best score - influencers = [3448, 3659, 318, 3851, 3370, 24, 777, 3654, 449]-1885.646 """
     """the last one i added is 449"""
-    """ CUURENT best score - influencers = [3448, 318, 3851, 3370, 24, 777, 3654, 449, 2771]-1905 last one added 2771"""
+    """ LAST best score - influencers = [3448, 318, 3851, 3370, 24, 777, 3654, 449, 2771]-score: 1911
+      last one added 2771"""
     """the last one i added is 777"""
-    """"ifluencers:  [3448, 2516, 3659, 318, 3851, 3370, 24, 777, 3654]-1867.832
-    LAST WHEN ADDED IS 3654"""
+  
+    """ CUURENT best score: [3448, 318, 3851, 3370, 24, 777, 3654, 2771, 132]-1953"""
+    """the last one i added is 132"""
     #shuffle the nodes to make every run different  [1608,3266,3260,3448]
-    "substracting: reduce 3448-200, reduce 318-200 ,reduce-3851-200, reduce 3370-300, reduce-24-150,reduce 777-200,3654-200,449-110 "
-    influencers =    [3448, 318, 3851, 3370, 24, 777, 3654, 449, 2771]
+    "substracting: reduce 24-170,3448-170,318-200, 3851-230, 777-100, 3370-300"
+    influencers = [3448, 318, 3851, 3370, 24, 777, 3654, 2771, 132]
     # Generate all permutations and store in a list
     # all_permutations = list(itertools.permutations(nodes))
     # random.shuffle(all_permutations)
@@ -382,6 +389,8 @@ if __name__ == '__main__':
         exit()
     purchased = set(influencers)    
     get_expectation_of_final_score(NoseBook_network, purchased)
+    
+
 #     list_500= [3299, 1478, 1608, 2255, 2389]   
 #     list_400 = [1090, 1091, 3588, 2341, 1769, 975, 3024, 3439, 2647, 3961, 506, 796, 3454]
 
